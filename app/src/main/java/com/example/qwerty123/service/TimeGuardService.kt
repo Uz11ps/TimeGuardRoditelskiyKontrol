@@ -72,24 +72,26 @@ class TimeGuardService : AccessibilityService() {
         }
 
         // 2. Блокировка URL в Chrome и других браузерах
-        // Мы проверяем событие только если это Chrome или если в окне изменился контент
         if (packageName == "com.android.chrome" || event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            val rootNode = rootInActiveWindow ?: return
-            
-            // Сначала пробуем найти по ID (самый быстрый способ)
-            val urlBarNodes = rootNode.findAccessibilityNodeInfosByViewId("com.android.chrome:id/url_bar")
-            if (urlBarNodes.isNotEmpty()) {
-                val urlText = urlBarNodes[0].text?.toString() ?: ""
-                if (urlText.isNotBlank()) {
-                    if (RulesRepository.isUrlBlocked(this, urlText)) {
-                        Log.w("TimeGuardService", "DETECTED BLOCKED URL (by ID): $urlText")
-                        showBlockScreen()
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                // Сначала пробуем найти по ID (самый быстрый способ)
+                val urlBarNodes = rootNode.findAccessibilityNodeInfosByViewId("com.android.chrome:id/url_bar")
+                if (urlBarNodes.isNotEmpty()) {
+                    val urlText = urlBarNodes[0].text?.toString() ?: ""
+                    if (urlText.isNotBlank()) {
+                        if (RulesRepository.isUrlBlocked(this, urlText)) {
+                            Log.w("TimeGuardService", "DETECTED BLOCKED URL (by ID): $urlText")
+                            showBlockScreen()
+                        }
                     }
+                } else {
+                    // Если по ID не нашли, сканируем дерево узлов
+                    checkForBlockedUrls(rootNode)
                 }
-            } else {
-                // Если по ID не нашли, сканируем дерево узлов (более медленный, но надежный способ)
-                checkForBlockedUrls(rootNode)
             }
+        }
+
         // 3. Защита от удаления
         if (packageName == "com.android.settings" || packageName == "com.google.android.packageinstaller" || packageName == "com.android.packageinstaller") {
             val rootNode = rootInActiveWindow
