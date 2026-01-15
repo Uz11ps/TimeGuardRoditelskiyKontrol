@@ -442,8 +442,11 @@ fun ParentDashboard(onBack: () -> Unit) {
                     Text("TimeGuard Панель", style = MaterialTheme.typography.labelMedium)
                     Text("Семья: $familyId", style = MaterialTheme.typography.titleMedium)
                 }
-                IconButton(onClick = { Prefs.saveRole(context, ""); Prefs.saveFamilyId(context, ""); onBack() }) { 
-                    Icon(Icons.Default.Delete, "Выход", tint = MaterialTheme.colorScheme.onPrimary)
+                TextButton(
+                    onClick = { Prefs.saveRole(context, ""); Prefs.saveFamilyId(context, ""); onBack() },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onPrimary)
+                ) {
+                    Text("Выход", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }

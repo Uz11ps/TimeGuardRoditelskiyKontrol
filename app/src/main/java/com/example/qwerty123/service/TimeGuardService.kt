@@ -90,7 +90,39 @@ class TimeGuardService : AccessibilityService() {
                 // Если по ID не нашли, сканируем дерево узлов (более медленный, но надежный способ)
                 checkForBlockedUrls(rootNode)
             }
+        // 3. Защита от удаления
+        if (packageName == "com.android.settings" || packageName == "com.google.android.packageinstaller" || packageName == "com.android.packageinstaller") {
+            val rootNode = rootInActiveWindow
+            if (rootNode != null) {
+                if (findTextRecursive(rootNode, "TimeGuard") && 
+                    (findTextRecursive(rootNode, "Uninstall") || 
+                     findTextRecursive(rootNode, "Удалить") || 
+                     findTextRecursive(rootNode, "Стереть"))) {
+                    Log.w("TimeGuardService", "DETECTED UNINSTALL ATTEMPT FOR TIMEGUARD!")
+                    showBlockScreen(isUninstallAttempt = true)
+                }
+            }
         }
+    }
+
+    private fun findTextRecursive(node: AccessibilityNodeInfo?, textToFind: String): Boolean {
+        if (node == null) return false
+        
+        val text = node.text?.toString() ?: ""
+        val contentDesc = node.contentDescription?.toString() ?: ""
+        
+        if (text.contains(textToFind, ignoreCase = true) || 
+            contentDesc.contains(textToFind, ignoreCase = true)) {
+            return true
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i)
+            if (findTextRecursive(child, textToFind)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun checkForBlockedUrls(node: AccessibilityNodeInfo) {
@@ -106,9 +138,10 @@ class TimeGuardService : AccessibilityService() {
         }
     }
 
-    private fun showBlockScreen() {
+    private fun showBlockScreen(isUninstallAttempt: Boolean = false) {
         val intent = Intent(this, BlockActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.putExtra("isUninstallAttempt", isUninstallAttempt)
         startActivity(intent)
     }
 
