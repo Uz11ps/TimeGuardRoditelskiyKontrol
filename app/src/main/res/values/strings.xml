@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TimeGuard</string>
+    <string name="accessibility_service_description">TimeGuard requires accessibility access to monitor app usage and block restricted content.</string>
+</resources>

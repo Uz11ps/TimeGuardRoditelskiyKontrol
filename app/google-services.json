@@ -1,0 +1,31 @@
+{
+  "project_info": {
+    "project_number": "815329236546",
+    "project_id": "comexampleqwerty123",
+    "storage_bucket": "comexampleqwerty123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:815329236546:android:7c818fd18244ac172effdb",
+        "android_client_info": {
+          "package_name": "com.example.qwerty123"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdT2z_n_yx5LUY7LOFHdJV--qLdvHa4sc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+
+
