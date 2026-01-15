@@ -46,6 +46,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.Canvas
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,18 +119,48 @@ sealed class Screen {
 fun RoleSelectionScreen(onParentSelected: () -> Unit, onChildSelected: () -> Unit) {
     val context = LocalContext.current
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("TimeGuard", style = MaterialTheme.typography.displayLarge)
-        Spacer(modifier = Modifier.height(48.dp))
-        Button(onClick = { Prefs.saveRole(context, "parent"); onParentSelected() }, modifier = Modifier.fillMaxWidth(0.7f)) {
-            Text("Я Родитель")
+        Surface(
+            modifier = Modifier.size(120.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Icon(
+                Icons.Default.Face, 
+                contentDescription = null, 
+                modifier = Modifier.padding(24.dp).fillMaxSize(),
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text("TimeGuard", style = MaterialTheme.typography.displayMedium, color = MaterialTheme.colorScheme.primary)
+        Text("Контроль и безопасность", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.outline)
+        
+        Spacer(modifier = Modifier.height(64.dp))
+        
+        Button(
+            onClick = { Prefs.saveRole(context, "parent"); onParentSelected() }, 
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Icon(Icons.Default.Phone, null)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("Я РОДИТЕЛЬ", style = MaterialTheme.typography.titleMedium)
+        }
+        
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { Prefs.saveRole(context, "child"); onChildSelected() }, modifier = Modifier.fillMaxWidth(0.7f)) {
-            Text("Я Ребёнок")
+        
+        OutlinedButton(
+            onClick = { Prefs.saveRole(context, "child"); onChildSelected() }, 
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Icon(Icons.Default.Face, null)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("Я РЕБЁНОК", style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -126,29 +170,52 @@ fun ParentSetupScreen(onConnected: () -> Unit) {
     val context = LocalContext.current
     var inputId by remember { mutableStateOf("") }
     var pin by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Создание семьи", style = MaterialTheme.typography.headlineMedium)
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp), 
+        verticalArrangement = Arrangement.Center, 
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Default.Phone, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = inputId, onValueChange = { inputId = it }, label = { Text("Код семьи") })
-        Spacer(modifier = Modifier.height(8.dp))
+        Text("Настройка Родителя", style = MaterialTheme.typography.headlineMedium)
+        Text("Создайте код для связи с ребенком", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        OutlinedTextField(
+            value = inputId, 
+            onValueChange = { inputId = it }, 
+            label = { Text("Придумайте код семьи") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = pin, 
             onValueChange = { if (it.length <= 4) pin = it }, 
             label = { Text("Придумайте ПИН (4 цифры)") },
+            modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            visualTransformation = PasswordVisualTransformation()
+            visualTransformation = PasswordVisualTransformation(),
+            shape = MaterialTheme.shapes.medium
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { 
-            if (inputId.isNotBlank() && pin.isNotBlank()) { 
-                FirebaseRepository.saveFamilyId(context, inputId)
-                Prefs.savePin(context, pin)
-                FirebaseRepository.saveParentPin(inputId, pin)
-                onConnected() 
-            } else {
-                Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
-            }
-        }) { Text("Начать управление") }
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+            onClick = { 
+                if (inputId.isNotBlank() && pin.isNotBlank()) { 
+                    FirebaseRepository.saveFamilyId(context, inputId)
+                    Prefs.savePin(context, pin)
+                    FirebaseRepository.saveParentPin(inputId, pin)
+                    onConnected() 
+                } else {
+                    Toast.makeText(context, "Заполните все поля", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.medium
+        ) { 
+            Text("СОЗДАТЬ СЕМЬЮ") 
+        }
     }
 }
 
@@ -156,17 +223,39 @@ fun ParentSetupScreen(onConnected: () -> Unit) {
 fun ChildSetupScreen(onConnected: () -> Unit) {
     val context = LocalContext.current
     var inputId by remember { mutableStateOf("") }
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("Подключение", style = MaterialTheme.typography.headlineMedium)
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp), 
+        verticalArrangement = Arrangement.Center, 
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Default.Face, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.secondary)
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = inputId, onValueChange = { inputId = it }, label = { Text("Код семьи") })
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { 
-            if (inputId.isNotBlank()) { 
-                FirebaseRepository.saveFamilyId(context, inputId)
-                onConnected() 
-            } 
-        }) { Text("Подключиться") }
+        Text("Настройка Ребенка", style = MaterialTheme.typography.headlineMedium)
+        Text("Введите код, созданный родителем", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        OutlinedTextField(
+            value = inputId, 
+            onValueChange = { inputId = it }, 
+            label = { Text("Код семьи") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+        Button(
+            onClick = { 
+                if (inputId.isNotBlank()) { 
+                    FirebaseRepository.saveFamilyId(context, inputId)
+                    onConnected() 
+                } 
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+        ) { 
+            Text("ПОДКЛЮЧИТЬСЯ") 
+        }
     }
 }
 
@@ -255,24 +344,73 @@ fun ChildDashboard(onBack: () -> Unit) {
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            "Режим ребёнка", 
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 8.dp).combinedClickable(
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp), 
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Surface(
+            modifier = Modifier.size(140.dp).combinedClickable(
                 onClick = {},
                 onLongClick = { 
                     enteredPin = ""
                     showResetDialog = true 
                 }
+            ),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.secondaryContainer
+        ) {
+            Icon(
+                Icons.Default.Face, 
+                contentDescription = null, 
+                modifier = Modifier.padding(32.dp).fillMaxSize(),
+                tint = MaterialTheme.colorScheme.secondary
             )
-        )
-        Text("Код семьи: $familyId", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+        }
+        
         Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = { 
-            enteredPin = ""
-            showPinDialog = true 
-        }) { Text("Настройки доступности") }
+        
+        Text(
+            "Режим ребёнка", 
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Text("Защита TimeGuard активна", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.outline)
+        
+        Spacer(modifier = Modifier.height(48.dp))
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Код вашей семьи", style = MaterialTheme.typography.labelSmall)
+                Text(familyId, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Button(
+            onClick = { 
+                enteredPin = ""
+                showPinDialog = true 
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.outline)
+        ) { 
+            Icon(Icons.Default.Settings, null)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("НАСТРОЙКИ ДОСТУПНОСТИ") 
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "Для изменения настроек требуется ПИН родителя", 
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline
+        )
     }
 }
 
@@ -283,28 +421,105 @@ fun ParentDashboard(onBack: () -> Unit) {
     val familyId = FirebaseRepository.getFamilyId(context) ?: ""
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Surface(color = MaterialTheme.colorScheme.primaryContainer) {
-            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Код вашей семьи:", style = MaterialTheme.typography.labelMedium)
-                    Text(familyId, style = MaterialTheme.typography.headlineSmall)
+        Surface(
+            color = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shadowElevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(16.dp), 
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+                ) {
+                    Icon(Icons.Default.List, null, modifier = Modifier.padding(8.dp))
                 }
-                OutlinedButton(onClick = { Prefs.saveRole(context, ""); Prefs.saveFamilyId(context, ""); onBack() }) { 
-                    Text("Выход") 
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("TimeGuard Панель", style = MaterialTheme.typography.labelMedium)
+                    Text("Семья: $familyId", style = MaterialTheme.typography.titleMedium)
+                }
+                IconButton(onClick = { Prefs.saveRole(context, ""); Prefs.saveFamilyId(context, ""); onBack() }) { 
+                    Icon(Icons.Default.Delete, "Выход", tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
 
-        TabRow(selectedTabIndex = tabIndex) {
+        TabRow(
+            selectedTabIndex = tabIndex,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[tabIndex]),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        ) {
             Tab(selected = tabIndex == 0, onClick = { tabIndex = 0 }, text = { Text("Приложения") })
             Tab(selected = tabIndex == 1, onClick = { tabIndex = 1 }, text = { Text("Черный список") })
             Tab(selected = tabIndex == 2, onClick = { tabIndex = 2 }, text = { Text("Навигация") })
         }
         
-        when(tabIndex) {
-            0 -> ParentAppsTab(familyId)
-            1 -> ParentBlacklistTab(familyId)
-            2 -> ParentNavigationTab(familyId)
+        Surface(
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            when(tabIndex) {
+                0 -> ParentAppsTab(familyId)
+                1 -> ParentBlacklistTab(familyId)
+                2 -> ParentNavigationTab(familyId)
+            }
+        }
+    }
+}
+
+@Composable
+fun AppIcon(packageName: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val pm = context.packageManager
+    
+    val iconBitmap = remember(packageName) {
+        try {
+            val drawable = pm.getApplicationIcon(packageName)
+            if (drawable is BitmapDrawable) {
+                drawable.bitmap.asImageBitmap()
+            } else {
+                val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else 512
+                val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else 512
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                drawable.setBounds(0, 0, canvas.width, canvas.height)
+                drawable.draw(canvas)
+                bitmap.asImageBitmap()
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    if (iconBitmap != null) {
+        Image(
+            bitmap = iconBitmap, 
+            contentDescription = null, 
+            modifier = modifier.clip(CircleShape),
+            contentScale = ContentScale.Fit
+        )
+    } else {
+        Surface(
+            modifier = modifier,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Icon(
+                Icons.Default.Refresh, 
+                contentDescription = null,
+                modifier = Modifier.padding(8.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -329,7 +544,12 @@ fun ParentAppsTab(familyId: String) {
             onDismissRequest = { showLimitDialog = null },
             title = { Text("Лимит времени (мин/день)") },
             text = {
-                OutlinedTextField(value = limitMinutes, onValueChange = { limitMinutes = it }, label = { Text("Минуты (0 для сброса)") })
+                OutlinedTextField(
+                    value = limitMinutes, 
+                    onValueChange = { limitMinutes = it.filter { c -> c.isDigit() } }, 
+                    label = { Text("Минуты (0 для сброса)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
             },
             confirmButton = {
                 Button(onClick = {
@@ -341,21 +561,63 @@ fun ParentAppsTab(familyId: String) {
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Приложения на телефоне ребёнка:", style = MaterialTheme.typography.titleMedium)
-        LazyColumn(modifier = Modifier.weight(1f)) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            "Приложения на телефоне ребёнка:", 
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+        
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(childApps) { app ->
                 val pkg = app["packageName"] ?: ""
                 val name = app["name"] ?: ""
                 val currentLimit = appLimits[pkg] ?: 0
+                val isBlocked = blockedPackages.contains(pkg)
                 
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(name)
-                        if (currentLimit > 0) Text("Лимит: $currentLimit мин.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isBlocked) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f) 
+                                        else MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp), 
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AppIcon(pkg, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(name, style = MaterialTheme.typography.titleSmall)
+                            if (currentLimit > 0) {
+                                Text(
+                                    "Лимит: $currentLimit мин.", 
+                                    style = MaterialTheme.typography.bodySmall, 
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            if (isBlocked) {
+                                Text(
+                                    "ЗАБЛОКИРОВАНО", 
+                                    style = MaterialTheme.typography.labelSmall, 
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        IconButton(onClick = { showLimitDialog = pkg; limitMinutes = currentLimit.toString() }) { 
+                            Icon(Icons.Default.Settings, null, tint = MaterialTheme.colorScheme.primary) 
+                        }
+                        Switch(
+                            checked = isBlocked, 
+                            onCheckedChange = { FirebaseRepository.setAppBlocked(familyId, pkg, it) },
+                            colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.error)
+                        )
                     }
-                    IconButton(onClick = { showLimitDialog = pkg; limitMinutes = currentLimit.toString() }) { Icon(Icons.Default.Settings, null) }
-                    Switch(checked = blockedPackages.contains(pkg), onCheckedChange = { FirebaseRepository.setAppBlocked(familyId, pkg, it) })
                 }
             }
         }
@@ -372,21 +634,56 @@ fun ParentBlacklistTab(familyId: String) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        OutlinedTextField(value = newUrl, onValueChange = { newUrl = it }, label = { Text("Заблокировать URL (напр. reddit)") }, modifier = Modifier.fillMaxWidth())
-        Button(onClick = { 
-            if (newUrl.isNotBlank()) {
-                FirebaseRepository.addBlockedUrl(familyId, newUrl)
-                newUrl = ""
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                OutlinedTextField(
+                    value = newUrl, 
+                    onValueChange = { newUrl = it }, 
+                    label = { Text("Заблокировать URL (напр. reddit)") }, 
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { 
+                        if (newUrl.isNotBlank()) {
+                            FirebaseRepository.addBlockedUrl(familyId, newUrl)
+                            newUrl = ""
+                        }
+                    }, 
+                    modifier = Modifier.fillMaxWidth()
+                ) { 
+                    Icon(Icons.Default.Add, null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Добавить в черный список") 
+                }
             }
-        }, modifier = Modifier.fillMaxWidth()) { Text("Добавить в черный список") }
+        }
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         Text("Список заблокированных сайтов:", style = MaterialTheme.typography.titleMedium)
-        LazyColumn {
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(blockedUrls.toList()) { (key, url) ->
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(url, modifier = Modifier.weight(1f))
-                    IconButton(onClick = { FirebaseRepository.removeBlockedUrl(familyId, key) }) { Icon(Icons.Default.Delete, null) }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp), 
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Info, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(url, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        IconButton(onClick = { FirebaseRepository.removeBlockedUrl(familyId, key) }) { 
+                            Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) 
+                        }
+                    }
                 }
             }
         }
@@ -430,7 +727,9 @@ fun ParentNavigationTab(familyId: String) {
                             FirebaseRepository.setGeofenceApps(familyId, showAppsDialog!!.name, newList)
                         }.padding(8.dp)) {
                             Checkbox(checked = isBlocked, onCheckedChange = null)
-                            Text(app["name"] ?: pkg)
+                            AppIcon(pkg, modifier = Modifier.size(32.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(app["name"] ?: pkg, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
