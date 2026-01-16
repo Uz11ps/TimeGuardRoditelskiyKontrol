@@ -71,47 +71,58 @@ fun BlockScreen(isUninstall: Boolean = false) {
             textAlign = TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
-        
-        OutlinedTextField(
-            value = pin,
-            onValueChange = { 
-                if (it.length <= 4) {
-                    pin = it
-                    error = false
-                }
-            },
-            label = { Text("Введите ПИН родителя", color = Color.White) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            visualTransformation = PasswordVisualTransformation(),
-            isError = error,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                focusedBorderColor = Color.White,
-                unfocusedBorderColor = Color.White.copy(alpha = 0.7f),
-                cursorColor = Color.White
+        if (isUninstall) {
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            OutlinedTextField(
+                value = pin,
+                onValueChange = { 
+                    if (it.length <= 4) {
+                        pin = it
+                        error = false
+                    }
+                },
+                label = { Text("Введите ПИН родителя", color = Color.White) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                visualTransformation = PasswordVisualTransformation(),
+                isError = error,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedBorderColor = Color.White,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.7f),
+                    cursorColor = Color.White
+                )
             )
-        )
-        
-        if (error) {
-            Text("Неверный ПИН-код", color = Color.Yellow, style = MaterialTheme.typography.labelSmall)
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Button(
-            onClick = {
-                if (pin == correctPin) {
-                    (context as? ComponentActivity)?.finish()
-                } else {
-                    error = true
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Red),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("РАЗБЛОКИРОВАТЬ")
+            
+            if (error) {
+                Text("Неверный ПИН-код", color = Color.Yellow, style = MaterialTheme.typography.labelSmall)
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Button(
+                onClick = {
+                    if (pin == correctPin) {
+                        com.example.qwerty123.data.RulesRepository.allowUninstallTemporarily()
+                        (context as? android.app.Activity)?.finish()
+                    } else {
+                        error = true
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Red),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("РАЗБЛОКИРОВАТЬ И УДАЛИТЬ")
+            }
+        } else {
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                onClick = { (context as? android.app.Activity)?.moveTaskToBack(true) },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Red)
+            ) {
+                Text("ВЫЙТИ")
+            }
         }
     }
 }

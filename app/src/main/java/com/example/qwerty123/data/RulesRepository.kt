@@ -12,6 +12,17 @@ object RulesRepository {
     // Храним геозоны в памяти для быстрого доступа из сервиса
     private var activeGeofences: List<GeofenceModel> = emptyList()
 
+    // Флаг для временного разрешения удаления
+    private var uninstallAllowedUntil: Long = 0
+
+    fun allowUninstallTemporarily() {
+        uninstallAllowedUntil = System.currentTimeMillis() + 30000 // 30 секунд
+    }
+
+    fun isUninstallAllowed(): Boolean {
+        return System.currentTimeMillis() < uninstallAllowedUntil
+    }
+
     fun isAppBlockedWithLocation(context: Context, packageName: String, currentLat: Double, currentLon: Double): Boolean {
         if (packageName == context.packageName) return false
         
